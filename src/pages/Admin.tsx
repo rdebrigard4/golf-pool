@@ -191,7 +191,15 @@ function ActiveTournamentSection({ tournament }: { tournament: Tournament | null
       <h3>Active tournament</h3>
       <p>
         <strong>{tournament.name}</strong> ({tournament.year}) — first tee:{' '}
-        {new Date(tournament.firstTeeTime).toLocaleString()}
+        {new Date(tournament.firstTeeTime).toLocaleString(undefined, {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZoneName: 'short',
+        })}
       </p>
       <p className="muted">Entry fee: ${tournament.entryFee}</p>
       <div className="actions">

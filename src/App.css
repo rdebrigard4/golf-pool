@@ -432,6 +432,11 @@ body {
   border-top: 1px solid var(--border);
   font-size: 0.95rem;
   color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.75rem;
+  flex-wrap: wrap;
 }
 
 .team-count strong {
@@ -439,6 +444,12 @@ body {
   font-weight: 700;
   color: var(--text);
   margin-right: 0.25rem;
+}
+
+.team-count-sep {
+  color: var(--border);
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .pick-summary {

@@ -93,6 +93,8 @@ function PreLockView({
 
   const teeTime = new Date(tournament.firstTeeTime)
   const countdown = formatCountdown(teeTime, now)
+  const paidCount = entries.filter((e) => e.paid).length
+  const pot = paidCount * tournament.entryFee
 
   function handleRemembered(entry: Entry) {
     saveMyEntryId(tournament.id, entry.id)
@@ -119,12 +121,21 @@ function PreLockView({
             day: 'numeric',
             hour: 'numeric',
             minute: '2-digit',
+            timeZoneName: 'short',
           })}
         </p>
-        <p className="team-count">
-          <strong>{entries.length}</strong>{' '}
-          {entries.length === 1 ? 'team' : 'teams'} submitted
-        </p>
+        <div className="team-count">
+          <span>
+            <strong>{entries.length}</strong>{' '}
+            {entries.length === 1 ? 'team' : 'teams'} submitted
+          </span>
+          <span className="team-count-sep" aria-hidden>
+            ·
+          </span>
+          <span>
+            <strong>${pot}</strong> pot
+          </span>
+        </div>
       </div>
 
       {myEntries.length > 0 && (
