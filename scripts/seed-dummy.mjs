@@ -54,7 +54,7 @@ const TEAM_NAMES = [
   'The Yips',
 ]
 
-const N_DUMMY = 12
+const N_DUMMY = 20
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)

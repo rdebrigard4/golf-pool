@@ -126,7 +126,7 @@ function AdminPanel({ user }: { user: User }) {
           className={tab === 'setup' ? 'active' : ''}
           onClick={() => setTab('setup')}
         >
-          Setup
+          Tournament Setup
         </button>
         <button
           className={tab === 'entries' ? 'active' : ''}
@@ -138,7 +138,7 @@ function AdminPanel({ user }: { user: User }) {
           className={tab === 'scoring' ? 'active' : ''}
           onClick={() => setTab('scoring')}
         >
-          Scoring
+          Golfer Scores
         </button>
       </nav>
 
@@ -227,6 +227,7 @@ interface TierFormState {
 }
 
 function CreateTournamentForm() {
+  const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [year, setYear] = useState(new Date().getFullYear())
   const [firstTeeTime, setFirstTeeTime] = useState('')
@@ -287,7 +288,17 @@ function CreateTournamentForm() {
 
   return (
     <div className="card">
-      <h3>Create tournament</h3>
+      <button
+        type="button"
+        className="collapsible-header"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <h3>Create tournament</h3>
+        <span className="collapse-chevron">{open ? '−' : '+'}</span>
+      </button>
+      {!open ? null : (
+      <>
       <p className="muted">
         Creates a new tournament and makes it active. Any previous active tournament becomes
         inactive.
@@ -359,6 +370,8 @@ function CreateTournamentForm() {
           {busy ? 'Creating…' : 'Create tournament'}
         </button>
       </form>
+      </>
+      )}
     </div>
   )
 }

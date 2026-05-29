@@ -1,18 +1,35 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Stats from './pages/Stats'
 import History from './pages/History'
 import HistoryDetail from './pages/HistoryDetail'
 import Admin from './pages/Admin'
+import { subscribeActiveTournament } from './lib/storage'
+import { isLocked } from './lib/dates'
+import type { Tournament } from './types'
 
 export default function App() {
+  const [activeTournament, setActiveTournament] = useState<Tournament | null>(null)
+  const [, setTick] = useState(0)
+
+  useEffect(() => subscribeActiveTournament(setActiveTournament), [])
+
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30000)
+    return () => clearInterval(id)
+  }, [])
+
+  const tournamentStarted = !!activeTournament && isLocked(activeTournament)
+  const homeLabel = tournamentStarted ? 'Leaderboard' : 'Home'
+
   return (
     <div className="app">
       <header className="app-header">
         <h1>Golf Pool</h1>
         <nav className="app-nav">
           <NavLink to="/" end>
-            Pool
+            {homeLabel}
           </NavLink>
           <NavLink to="/stats">Stats</NavLink>
           <NavLink to="/history">History</NavLink>
