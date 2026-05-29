@@ -100,11 +100,20 @@ export function rankEntries(
   }))
 }
 
+function sumActualRounds(rounds: GolferScore['rounds']): number {
+  return (
+    (rounds.r1 ?? 0) +
+    (rounds.r2 ?? 0) +
+    (rounds.r3 ?? 0) +
+    (rounds.r4 ?? 0)
+  )
+}
+
 export function winningGolferScore(golfers: GolferScore[]): number {
   let best = Infinity
   for (const g of golfers) {
     if (g.status === 'cut' || g.status === 'wd' || g.status === 'dq') continue
-    const total = g.totalToPar ?? Infinity
+    const total = g.totalToPar ?? sumActualRounds(g.rounds)
     if (total < best) best = total
   }
   return best === Infinity ? 0 : best
