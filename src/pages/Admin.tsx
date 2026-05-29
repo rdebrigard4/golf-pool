@@ -235,7 +235,7 @@ function CreateTournamentForm() {
   const [name, setName] = useState('')
   const [year, setYear] = useState(new Date().getFullYear())
   const [firstTeeTime, setFirstTeeTime] = useState('')
-  const [entryFee, setEntryFee] = useState(20)
+  const [entryFee, setEntryFee] = useState(25)
   const [tiers, setTiers] = useState<TierFormState>({
     tier1: '',
     tier2: '',
