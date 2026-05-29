@@ -540,6 +540,8 @@ function ScoringTab({ tournament }: { tournament: Tournament }) {
                   <span>R3</span>
                   <span>R4</span>
                   <span>Status</span>
+                  <span>WD Rd</span>
+                  <span></span>
                 </div>
               </div>
               {golfers.map((name) => (
@@ -672,21 +674,20 @@ function ScoringRow({
           <option value="wd">WD</option>
           <option value="dq">DQ</option>
         </select>
-        {showWd && (
-          <input
-            type="number"
-            min={1}
-            max={4}
-            value={wdRound}
-            onChange={(e) => mark(setWdRound)(e.target.value)}
-            placeholder="WD rd"
-            className="wd-round"
-          />
-        )}
+        <input
+          type="number"
+          min={1}
+          max={4}
+          value={showWd ? wdRound : ''}
+          onChange={(e) => mark(setWdRound)(e.target.value)}
+          disabled={!showWd}
+          className="wd-round"
+          placeholder="—"
+        />
         <button
           onClick={save}
           disabled={busy || !dirty}
-          className={`btn ${dirty ? 'btn-primary' : ''}`}
+          className={`btn scoring-save ${dirty ? 'btn-primary' : ''}`}
         >
           {busy ? '…' : 'Save'}
         </button>

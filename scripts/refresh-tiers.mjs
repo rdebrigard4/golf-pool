@@ -30,28 +30,25 @@ if (!PASSWORD) {
 }
 
 const NEW_TIERS = {
-  tier1: [
-    'Scottie Scheffler',
-    'Rory McIlroy',
+  tier1: ['Scottie Scheffler', 'Rory McIlroy'],
+  tier2: [
     'Xander Schauffele',
     'Collin Morikawa',
     'Bryson DeChambeau',
-  ],
-  tier2: [
     'Jon Rahm',
+  ],
+  tier3: [
     'Ludvig Aberg',
     'Viktor Hovland',
     'Patrick Cantlay',
     'Justin Thomas',
-  ],
-  tier3: [
     'Hideki Matsuyama',
-    'Tommy Fleetwood',
     'Cameron Smith',
-    'Tony Finau',
-    'Sahith Theegala',
   ],
   tier4: [
+    'Tommy Fleetwood',
+    'Tony Finau',
+    'Sahith Theegala',
     'Jordan Spieth',
     'Brooks Koepka',
     'Cameron Young',
@@ -64,6 +61,11 @@ const NEW_TIERS = {
     'Sungjae Im',
     'Sepp Straka',
     'Robert MacIntyre',
+    'Sam Burns',
+    'Tyrrell Hatton',
+    'Shane Lowry',
+    'Joaquin Niemann',
+    'Matthew Fitzpatrick',
   ],
   tier5b: [
     'Nicolai Højgaard',
@@ -71,6 +73,11 @@ const NEW_TIERS = {
     'Maverick McNealy',
     'Si Woo Kim',
     'Keegan Bradley',
+    'Aaron Rai',
+    'Stephan Jaeger',
+    'Davis Thompson',
+    'Will Zalatoris',
+    'Patrick Reed',
   ],
 }
 

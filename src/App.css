@@ -517,7 +517,7 @@ body {
 
 .scoring-fields {
   display: grid;
-  grid-template-columns: repeat(4, 56px) 110px auto;
+  grid-template-columns: 56px 56px 56px 56px 110px 56px 80px;
   align-items: center;
   gap: 0.4rem;
 }
@@ -534,8 +534,23 @@ body {
   width: 100%;
 }
 
+.scoring-fields input[type='number'] {
+  text-align: center;
+}
+
 .scoring-fields .wd-round {
-  width: 56px;
+  width: 100%;
+}
+
+.scoring-fields .wd-round:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.scoring-save {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.85rem;
 }
 
 .scoring-head {
