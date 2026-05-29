@@ -16,7 +16,11 @@ import {
 import type { Entry, GolferScore, GolferStatus, TierId, Tournament } from '../types'
 import { TIER_IDS, TIER_LABELS } from '../types'
 
-const ADMIN_EMAIL = 'rdebrigard4@gmail.com'
+const ADMIN_EMAILS = ['rdebrigard4@gmail.com', 'skinney1007@gmail.com']
+
+function isAdminEmail(email: string | null | undefined): boolean {
+  return !!email && ADMIN_EMAILS.includes(email.toLowerCase())
+}
 
 type AdminTab = 'setup' | 'entries' | 'scoring'
 
@@ -33,7 +37,7 @@ export default function Admin() {
 
   if (loading) return <p className="muted">Loading…</p>
   if (!user) return <LoginForm />
-  if (user.email !== ADMIN_EMAIL) return <NotAuthorized email={user.email ?? ''} />
+  if (!isAdminEmail(user.email)) return <NotAuthorized email={user.email ?? ''} />
   return <AdminPanel user={user} />
 }
 
