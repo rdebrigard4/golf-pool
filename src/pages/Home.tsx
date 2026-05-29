@@ -193,14 +193,15 @@ function EntryForm({
   const [busy, setBusy] = useState(false)
   const [confirmed, setConfirmed] = useState<Entry | null>(null)
   const [error, setError] = useState('')
-  const [lookupOpen, setLookupOpen] = useState(false)
   const [lookupEmail, setLookupEmail] = useState('')
   const [lookupStatus, setLookupStatus] = useState('')
+  const [mode, setMode] = useState<'choose' | 'new' | 'lookup' | 'edit'>('choose')
 
   useEffect(() => {
     if (editTarget) {
       loadFromEntry(editTarget)
       setConfirmed(null)
+      setMode('edit')
     }
   }, [editTarget?.id])
 
@@ -210,7 +211,6 @@ function EntryForm({
     setPicks(entry.picks)
     setTiebreak(String(entry.tiebreak))
     setEditingId(entry.id)
-    setLookupOpen(false)
     setLookupStatus('')
     setError('')
   }
@@ -223,6 +223,9 @@ function EntryForm({
     setEditingId(null)
     setConfirmed(null)
     setError('')
+    setMode('choose')
+    setLookupEmail('')
+    setLookupStatus('')
     onClearEdit()
   }
 
@@ -237,6 +240,7 @@ function EntryForm({
         return
       }
       loadFromEntry(entry)
+      setMode('edit')
     } catch (err) {
       setLookupStatus(err instanceof Error ? err.message : 'Lookup failed')
     }
@@ -342,28 +346,41 @@ function EntryForm({
     )
   }
 
-  return (
-    <div className="card">
-      <div className="form-header">
-        <h3>{editingId ? 'Edit your picks' : 'Submit your picks'}</h3>
-        {!editingId && (
+  if (mode === 'choose') {
+    return (
+      <div className="card entry-choice">
+        <h3>Get into the pool</h3>
+        <p className="muted">Pick one:</p>
+        <div className="entry-choice-buttons">
           <button
             type="button"
-            className="link-btn"
-            onClick={() => setLookupOpen((v) => !v)}
+            className="btn btn-primary entry-choice-btn"
+            onClick={() => setMode('new')}
           >
-            {lookupOpen ? 'Cancel' : 'Edit existing entry by email'}
+            Submit a new team
           </button>
-        )}
-        {editingId && (
-          <button type="button" className="link-btn" onClick={startFresh}>
-            Cancel edit
+          <button
+            type="button"
+            className="btn btn-primary entry-choice-btn"
+            onClick={() => setMode('lookup')}
+          >
+            Edit an existing team
           </button>
-        )}
+        </div>
       </div>
+    )
+  }
 
-      {lookupOpen && (
-        <form onSubmit={handleLookup} className="form lookup-form">
+  if (mode === 'lookup') {
+    return (
+      <div className="card">
+        <div className="form-header">
+          <h3>Find your entry</h3>
+          <button type="button" className="link-btn" onClick={startFresh}>
+            Back
+          </button>
+        </div>
+        <form onSubmit={handleLookup} className="form">
           <label>
             <span>Your email</span>
             <input
@@ -371,15 +388,27 @@ function EntryForm({
               value={lookupEmail}
               onChange={(e) => setLookupEmail(e.target.value)}
               placeholder="you@example.com"
+              autoFocus
               required
             />
           </label>
           {lookupStatus && <p className="error">{lookupStatus}</p>}
-          <button type="submit" className="btn">
+          <button type="submit" className="btn btn-primary">
             Find my entry
           </button>
         </form>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="card">
+      <div className="form-header">
+        <h3>{mode === 'edit' ? 'Edit your picks' : 'Submit a new team'}</h3>
+        <button type="button" className="link-btn" onClick={startFresh}>
+          Cancel
+        </button>
+      </div>
 
       <form onSubmit={handleSubmit} className="form">
         <div className="row">
