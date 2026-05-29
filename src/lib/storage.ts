@@ -6,7 +6,6 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
-  orderBy,
   query,
   setDoc,
   updateDoc,
@@ -75,14 +74,11 @@ export function subscribeGolferScores(
 }
 
 export async function listPastTournaments(): Promise<Tournament[]> {
-  const q = query(
-    collection(db, 'tournaments'),
-    where('isComplete', '==', true),
-    orderBy('year', 'desc'),
-  )
+  const q = query(collection(db, 'tournaments'), where('isComplete', '==', true))
   const snap = await getDocs(q)
   const items: Tournament[] = []
   snap.forEach((d) => items.push({ id: d.id, ...(d.data() as Omit<Tournament, 'id'>) }))
+  items.sort((a, b) => b.year - a.year || b.firstTeeTime.localeCompare(a.firstTeeTime))
   return items
 }
 
@@ -90,6 +86,22 @@ export async function getTournament(id: string): Promise<Tournament | null> {
   const snap = await getDoc(doc(db, 'tournaments', id))
   if (!snap.exists()) return null
   return { id: snap.id, ...(snap.data() as Omit<Tournament, 'id'>) }
+}
+
+export async function listEntries(tournamentId: string): Promise<Entry[]> {
+  const q = query(collection(db, 'entries'), where('tournamentId', '==', tournamentId))
+  const snap = await getDocs(q)
+  const items: Entry[] = []
+  snap.forEach((d) => items.push({ id: d.id, ...(d.data() as Omit<Entry, 'id'>) }))
+  return items
+}
+
+export async function listGolferScores(tournamentId: string): Promise<GolferScore[]> {
+  const q = query(collection(db, 'golferScores'), where('tournamentId', '==', tournamentId))
+  const snap = await getDocs(q)
+  const items: GolferScore[] = []
+  snap.forEach((d) => items.push({ id: d.id, ...(d.data() as Omit<GolferScore, 'id'>) }))
+  return items
 }
 
 export async function saveTournament(t: Tournament): Promise<void> {
