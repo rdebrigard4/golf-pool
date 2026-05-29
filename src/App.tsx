@@ -7,11 +7,14 @@ import HistoryDetail from './pages/HistoryDetail'
 import Admin from './pages/Admin'
 import { subscribeActiveTournament } from './lib/storage'
 import { isLocked } from './lib/dates'
+import { applyTheme, loadTheme, saveTheme } from './theme'
+import type { Theme } from './theme'
 import type { Tournament } from './types'
 
 export default function App() {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null)
   const [, setTick] = useState(0)
+  const [theme, setTheme] = useState<Theme>(() => loadTheme())
 
   useEffect(() => subscribeActiveTournament(setActiveTournament), [])
 
@@ -20,6 +23,11 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
+  useEffect(() => {
+    applyTheme(theme)
+    saveTheme(theme)
+  }, [theme])
+
   const tournamentStarted = !!activeTournament && isLocked(activeTournament)
   const homeLabel = tournamentStarted ? 'Leaderboard' : 'Home'
 
@@ -27,14 +35,24 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>Golf Pool</h1>
-        <nav className="app-nav">
-          <NavLink to="/" end>
-            {homeLabel}
-          </NavLink>
-          <NavLink to="/stats">Stats</NavLink>
-          <NavLink to="/history">History</NavLink>
-          <NavLink to="/admin">Admin</NavLink>
-        </nav>
+        <div className="header-right">
+          <nav className="app-nav">
+            <NavLink to="/" end>
+              {homeLabel}
+            </NavLink>
+            <NavLink to="/stats">Stats</NavLink>
+            <NavLink to="/history">History</NavLink>
+            <NavLink to="/admin">Admin</NavLink>
+          </nav>
+          <button
+            type="button"
+            className="theme-btn"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? '☀' : '☾'}
+          </button>
+        </div>
       </header>
       <main className="app-main">
         <Routes>
