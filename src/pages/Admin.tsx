@@ -22,7 +22,7 @@ function isAdminEmail(email: string | null | undefined): boolean {
   return !!email && ADMIN_EMAILS.includes(email.toLowerCase())
 }
 
-type AdminTab = 'setup' | 'entries' | 'scoring'
+type TournamentTab = 'entries' | 'scorers' | 'settings'
 
 export default function Admin() {
   const [user, setUser] = useState<User | null>(null)
@@ -109,7 +109,7 @@ function NotAuthorized({ email }: { email: string }) {
 
 function AdminPanel({ user }: { user: User }) {
   const [active, setActive] = useState<Tournament | null>(null)
-  const [tab, setTab] = useState<AdminTab>('setup')
+  const [view, setView] = useState<'landing' | 'tournament'>('landing')
 
   useEffect(() => subscribeActiveTournament(setActive), [])
 
@@ -125,13 +125,110 @@ function AdminPanel({ user }: { user: User }) {
         </div>
       </div>
 
+      {view === 'tournament' && active ? (
+        <TournamentAdmin tournament={active} onBack={() => setView('landing')} />
+      ) : (
+        <AdminLanding active={active} onManage={() => setView('tournament')} />
+      )}
+    </div>
+  )
+}
+
+function formatTee(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  })
+}
+
+function AdminLanding({
+  active,
+  onManage,
+}: {
+  active: Tournament | null
+  onManage: () => void
+}) {
+  return (
+    <>
+      {active ? (
+        <div className="card">
+          <h3>Active tournament</h3>
+          <p>
+            <strong>{active.name}</strong> ({active.year}) — first tee:{' '}
+            {formatTee(active.firstTeeTime)}
+          </p>
+          <p className="muted">Entry fee: ${active.entryFee}</p>
+          <div className="actions">
+            <button className="btn btn-primary" onClick={onManage}>
+              Manage →
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="card">
+          <h3>No active tournament</h3>
+          <p className="muted">Create one below to start taking entries.</p>
+        </div>
+      )}
+      <CreateTournamentForm />
+    </>
+  )
+}
+
+function TournamentAdmin({
+  tournament,
+  onBack,
+}: {
+  tournament: Tournament
+  onBack: () => void
+}) {
+  const [tab, setTab] = useState<TournamentTab>('entries')
+
+  return (
+    <div>
+      <button type="button" className="link-btn muted-link" onClick={onBack}>
+        ← All tournaments
+      </button>
+
+      <div className="card">
+        <h3>
+          {tournament.name} ({tournament.year})
+        </h3>
+        <p className="muted">
+          First tee: {formatTee(tournament.firstTeeTime)} · Entry fee: $
+          {tournament.entryFee}
+        </p>
+        <div className="actions">
+          <label className="inline-toggle">
+            <input
+              type="checkbox"
+              checked={tournament.lockedManually}
+              onChange={(e) =>
+                updateTournament(tournament.id, { lockedManually: e.target.checked })
+              }
+            />
+            <span>Manually lock entries</span>
+          </label>
+          {!tournament.isComplete && (
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                if (!confirm('Mark this tournament complete? It will move to History.')) return
+                updateTournament(tournament.id, { isComplete: true, isActive: false })
+              }}
+            >
+              Mark complete
+            </button>
+          )}
+        </div>
+      </div>
+
       <nav className="admin-tabs">
-        <button
-          className={tab === 'setup' ? 'active' : ''}
-          onClick={() => setTab('setup')}
-        >
-          Tournament Setup
-        </button>
         <button
           className={tab === 'entries' ? 'active' : ''}
           onClick={() => setTab('entries')}
@@ -139,92 +236,126 @@ function AdminPanel({ user }: { user: User }) {
           Entries
         </button>
         <button
-          className={tab === 'scoring' ? 'active' : ''}
-          onClick={() => setTab('scoring')}
+          className={tab === 'scorers' ? 'active' : ''}
+          onClick={() => setTab('scorers')}
         >
-          Golfer Scores
+          Scorers
+        </button>
+        <button
+          className={tab === 'settings' ? 'active' : ''}
+          onClick={() => setTab('settings')}
+        >
+          Settings
         </button>
       </nav>
 
-      {tab === 'setup' && (
-        <>
-          <ActiveTournamentSection tournament={active} />
-          <CreateTournamentForm />
-        </>
+      {tab === 'entries' && <EntriesTab tournament={tournament} />}
+      {tab === 'scorers' && <ScoringTab tournament={tournament} />}
+      {tab === 'settings' && (
+        <SettingsTab key={tournament.id} tournament={tournament} />
       )}
-      {tab === 'entries' &&
-        (active ? (
-          <EntriesTab tournament={active} />
-        ) : (
-          <NoActiveMessage />
-        ))}
-      {tab === 'scoring' &&
-        (active ? (
-          <ScoringTab tournament={active} />
-        ) : (
-          <NoActiveMessage />
-        ))}
     </div>
   )
 }
 
-function NoActiveMessage() {
-  return (
-    <div className="card">
-      <p className="muted">No active tournament — create one in the Setup tab.</p>
-    </div>
-  )
+function tiersToForm(t: Tournament): TierFormState {
+  const form = {} as TierFormState
+  for (const tier of TIER_IDS) {
+    form[tier] = (t.tiers[tier]?.golfers ?? []).join('\n')
+  }
+  return form
 }
 
-function ActiveTournamentSection({ tournament }: { tournament: Tournament | null }) {
-  if (!tournament) {
-    return (
-      <div className="card">
-        <h3>Active tournament</h3>
-        <p className="muted">None yet — create one below.</p>
-      </div>
-    )
+function SettingsTab({ tournament }: { tournament: Tournament }) {
+  const [espnEventId, setEspnEventId] = useState(tournament.espnEventId ?? '')
+  const [entryFee, setEntryFee] = useState(tournament.entryFee)
+  const [tiers, setTiers] = useState<TierFormState>(() => tiersToForm(tournament))
+  const [busy, setBusy] = useState(false)
+  const [done, setDone] = useState('')
+
+  // State seeds from props on mount; the `key={tournament.id}` at the render
+  // site remounts this form if the active tournament ever swaps, so an
+  // in-flight edit is never clobbered by an onSnapshot refresh (e.g. lock toggle).
+
+  async function save(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setDone('')
+    try {
+      const parsedTiers = {} as Tournament['tiers']
+      for (const tier of TIER_IDS) {
+        parsedTiers[tier] = {
+          label: tournament.tiers[tier]?.label ?? TIER_LABELS[tier],
+          golfers: tiers[tier]
+            .split('\n')
+            .map((s) => s.trim())
+            .filter(Boolean),
+        }
+      }
+      await updateTournament(tournament.id, {
+        // Empty string = "not configured"; avoids passing undefined to Firestore.
+        espnEventId: espnEventId.trim(),
+        entryFee,
+        tiers: parsedTiers,
+      })
+      setDone('Saved')
+    } catch (err) {
+      setDone(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <div className="card">
-      <h3>Active tournament</h3>
-      <p>
-        <strong>{tournament.name}</strong> ({tournament.year}) — first tee:{' '}
-        {new Date(tournament.firstTeeTime).toLocaleString(undefined, {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          timeZoneName: 'short',
-        })}
-      </p>
-      <p className="muted">Entry fee: ${tournament.entryFee}</p>
-      <div className="actions">
-        <label className="inline-toggle">
-          <input
-            type="checkbox"
-            checked={tournament.lockedManually}
-            onChange={(e) =>
-              updateTournament(tournament.id, { lockedManually: e.target.checked })
-            }
-          />
-          <span>Manually lock entries</span>
-        </label>
-        {!tournament.isComplete && (
-          <button
-            className="btn btn-danger"
-            onClick={() => {
-              if (!confirm('Mark this tournament complete? It will move to History.')) return
-              updateTournament(tournament.id, { isComplete: true, isActive: false })
-            }}
-          >
-            Mark complete
-          </button>
-        )}
-      </div>
+      <h3>Settings</h3>
+      <form onSubmit={save} className="form">
+        <div className="row">
+          <label>
+            <span>ESPN event ID</span>
+            <input
+              type="text"
+              value={espnEventId}
+              onChange={(e) => setEspnEventId(e.target.value)}
+              placeholder="401811952"
+              inputMode="numeric"
+            />
+          </label>
+          <label>
+            <span>Entry fee ($)</span>
+            <input
+              type="number"
+              value={entryFee}
+              onChange={(e) => setEntryFee(Number(e.target.value))}
+              min={0}
+            />
+          </label>
+        </div>
+        <p className="muted">
+          ESPN event ID drives live scoring — it's the <code>tournamentId</code> in
+          the ESPN leaderboard URL (e.g. 401811952 for the 2026 US Open).
+        </p>
+
+        <fieldset>
+          <legend>Tiers (one golfer per line)</legend>
+          {TIER_IDS.map((tier) => (
+            <label key={tier}>
+              <span>{tournament.tiers[tier]?.label ?? TIER_LABELS[tier]}</span>
+              <textarea
+                rows={4}
+                value={tiers[tier]}
+                onChange={(e) => setTiers({ ...tiers, [tier]: e.target.value })}
+                placeholder="Scottie Scheffler"
+              />
+            </label>
+          ))}
+        </fieldset>
+
+        {done && <p className="muted">{done}</p>}
+        <button type="submit" className="btn btn-primary" disabled={busy}>
+          {busy ? 'Saving…' : 'Save settings'}
+        </button>
+      </form>
     </div>
   )
 }
