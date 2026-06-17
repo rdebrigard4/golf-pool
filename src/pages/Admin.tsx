@@ -870,7 +870,7 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
                         Edit picks
                       </button>
                       <button
-                        className="link-btn muted-link"
+                        className="link-btn"
                         onClick={() => {
                           if (confirm(`Delete entry "${e.entryName}"?`)) deleteEntry(e.id)
                         }}
