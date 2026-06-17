@@ -213,13 +213,25 @@ function TournamentAdmin({
       </button>
 
       <div className="card">
-        <h3>
-          {tournament.name} ({tournament.year})
-        </h3>
-        <p className="muted">
-          First tee: {formatTee(tournament.firstTeeTime)} · Entry fee: $
-          {tournament.entryFee}
-        </p>
+        <h2 className="manage-title">
+          {tournament.name} <span className="manage-title-year">{tournament.year}</span>
+        </h2>
+        <dl className="manage-meta">
+          <div>
+            <dt>First tee</dt>
+            <dd>{formatTee(tournament.firstTeeTime)}</dd>
+          </div>
+          <div>
+            <dt>Entry fee</dt>
+            <dd>${tournament.entryFee}</dd>
+          </div>
+          {tournament.espnEventId && (
+            <div>
+              <dt>ESPN event ID</dt>
+              <dd>{tournament.espnEventId}</dd>
+            </div>
+          )}
+        </dl>
         <div className="actions">
           <label className="inline-toggle">
             <input

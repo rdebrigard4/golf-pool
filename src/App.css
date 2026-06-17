@@ -623,6 +623,44 @@ body {
   margin: 0;
 }
 
+.manage-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.9rem;
+  line-height: 1.15;
+}
+
+.manage-title-year {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.manage-meta {
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.manage-meta > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.manage-meta dt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.manage-meta dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 .entries-actions {
   display: flex;
   gap: 0.5rem;
