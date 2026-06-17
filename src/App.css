@@ -623,6 +623,48 @@ body {
   margin: 0;
 }
 
+.entries-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.import-msg {
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.import-preview {
+  margin: 0.5rem 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.import-preview h4 {
+  margin: 0 0 0.5rem;
+}
+
+.import-problems {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--danger);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.import-preview-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
 .entries-table {
   width: 100%;
   border-collapse: collapse;

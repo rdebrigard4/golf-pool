@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
 import type { User } from 'firebase/auth'
 import { signIn, signOut, subscribeUser } from '../lib/auth'
 import {
@@ -7,6 +7,7 @@ import {
   deleteEntry,
   saveGolferScore,
   saveTournament,
+  setEntry,
   subscribeActiveTournament,
   subscribeEntries,
   subscribeGolferScores,
@@ -15,6 +16,8 @@ import {
 } from '../lib/storage'
 import type { Entry, GolferScore, GolferStatus, TierId, Tournament } from '../types'
 import { TIER_IDS, TIER_LABELS } from '../types'
+import { buildImport } from '../lib/importEntries'
+import type { ImportPreview } from '../lib/importEntries'
 
 const ADMIN_EMAILS = ['rdebrigard4@gmail.com', 'skinney1007@gmail.com']
 
@@ -536,6 +539,9 @@ function CreateTournamentForm() {
 function EntriesTab({ tournament }: { tournament: Tournament }) {
   const [entries, setEntries] = useState<Entry[]>([])
   const [pendingPaid, setPendingPaid] = useState<Record<string, boolean>>({})
+  const [preview, setPreview] = useState<ImportPreview | null>(null)
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState('')
 
   useEffect(() => subscribeEntries(tournament.id, setEntries), [tournament.id])
 
@@ -591,6 +597,47 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
     URL.revokeObjectURL(url)
   }
 
+  async function handleFile(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-picking the same file later
+    if (!file) return
+    setImportMsg('')
+    try {
+      const text = await file.text()
+      setPreview(buildImport(text, tournament))
+    } catch (err) {
+      setImportMsg(err instanceof Error ? err.message : 'Could not read file')
+    }
+  }
+
+  // Split the parsed entries into new vs existing against what's in Firestore.
+  const existingIds = useMemo(() => new Set(entries.map((e) => e.id)), [entries])
+  const previewCreate = preview?.entries.filter((p) => !existingIds.has(p.docId)).length ?? 0
+  const previewUpdate = preview?.entries.filter((p) => existingIds.has(p.docId)).length ?? 0
+  const previewIds = useMemo(
+    () => new Set(preview?.entries.map((p) => p.docId) ?? []),
+    [preview],
+  )
+  const previewRemoved = preview ? entries.filter((e) => !previewIds.has(e.id)) : []
+
+  async function confirmImport() {
+    if (!preview) return
+    setImporting(true)
+    try {
+      const paidById = new Map(entries.map((e) => [e.id, e.paid]))
+      for (const p of preview.entries) {
+        // Preserve any paid flag already set on this entry.
+        await setEntry(p.docId, { ...p.entry, paid: paidById.get(p.docId) ?? false })
+      }
+      setImportMsg(`Imported ${preview.entries.length} entr${preview.entries.length === 1 ? 'y' : 'ies'} (${previewCreate} new, ${previewUpdate} updated).`)
+      setPreview(null)
+    } catch (err) {
+      setImportMsg(err instanceof Error ? err.message : 'Import failed')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   return (
     <div className="card">
       <div className="entries-header">
@@ -600,10 +647,64 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
             {paidCount} paid · pot ${pot}
           </p>
         </div>
-        <button className="btn" onClick={exportCsv} disabled={entries.length === 0}>
-          Export CSV
-        </button>
+        <div className="entries-actions">
+          <label className="btn">
+            Import CSV
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleFile}
+              style={{ display: 'none' }}
+            />
+          </label>
+          <button className="btn" onClick={exportCsv} disabled={entries.length === 0}>
+            Export CSV
+          </button>
+        </div>
       </div>
+
+      {importMsg && <p className="import-msg">{importMsg}</p>}
+
+      {preview && (
+        <div className="import-preview">
+          <h4>Import preview</h4>
+          <p>
+            {preview.rowCount} row{preview.rowCount === 1 ? '' : 's'} →{' '}
+            <strong>{preview.entries.length}</strong> entr
+            {preview.entries.length === 1 ? 'y' : 'ies'} ({previewCreate} new,{' '}
+            {previewUpdate} updated)
+            {previewRemoved.length > 0 && (
+              <> · {previewRemoved.length} existing not in file (kept)</>
+            )}
+          </p>
+          {preview.problems.length > 0 ? (
+            <details open>
+              <summary>
+                ⚠️ {preview.problems.length} issue{preview.problems.length === 1 ? '' : 's'}
+              </summary>
+              <ul className="import-problems">
+                {preview.problems.map((p, i) => (
+                  <li key={i}>{p}</li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <p className="muted">✓ All picks validate; all tiebreaks parsed.</p>
+          )}
+          <div className="import-preview-actions">
+            <button
+              className="btn btn-primary"
+              onClick={confirmImport}
+              disabled={importing || preview.entries.length === 0}
+            >
+              {importing ? 'Importing…' : `Confirm import (${preview.entries.length})`}
+            </button>
+            <button className="btn" onClick={() => setPreview(null)} disabled={importing}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <p className="muted">No entries yet.</p>

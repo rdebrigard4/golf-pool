@@ -134,6 +134,12 @@ export async function updateEntry(id: string, partial: Partial<Entry>): Promise<
   await updateDoc(doc(db, 'entries', id), partial)
 }
 
+// Write an entry at a known doc id (used by the CSV importer, which keys on
+// email+team so re-imports overwrite cleanly instead of duplicating).
+export async function setEntry(id: string, entry: Omit<Entry, 'id'>): Promise<void> {
+  await setDoc(doc(db, 'entries', id), entry, { merge: true })
+}
+
 export async function deleteEntry(id: string): Promise<void> {
   await deleteDoc(doc(db, 'entries', id))
 }
