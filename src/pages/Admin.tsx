@@ -735,9 +735,11 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
             {entries.map((e) => (
               <tr key={e.id}>
                 <td>
-                  <details>
+                  <details className="entry-details">
                     <summary>
+                      <span className="disclosure" aria-hidden="true">▸</span>
                       <strong>{e.entryName}</strong>
+                      <span className="expand-hint"></span>
                     </summary>
                     <ul className="pick-summary">
                       {TIER_IDS.map((t) => (
