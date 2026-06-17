@@ -739,37 +739,31 @@ body {
 }
 
 .entries-table .entry-details .disclosure {
-  color: var(--muted);
-  font-size: 0.75rem;
-  transition: transform 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 0.7rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.entries-table .entry-details summary:hover .disclosure {
+  background: var(--border);
 }
 
 .entries-table .entry-details[open] .disclosure {
   transform: rotate(90deg);
 }
 
-.entries-table .entry-details .expand-hint {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--primary);
-}
-
-.entries-table .entry-details .expand-hint::after {
-  content: 'show picks';
-}
-
-.entries-table .entry-details[open] .expand-hint::after {
-  content: 'hide picks';
-}
-
 .entries-table .entry-details[open] summary {
   margin-bottom: 0.25rem;
-}
-
-.entries-table .entry-details[open] .expand-hint {
-  color: var(--muted);
 }
 
 .entries-table .pick-summary {
