@@ -256,7 +256,7 @@ function TournamentAdmin({
           className={tab === 'scorers' ? 'active' : ''}
           onClick={() => setTab('scorers')}
         >
-          Scorers
+          Golfer Scores
         </button>
         <button
           className={tab === 'settings' ? 'active' : ''}
