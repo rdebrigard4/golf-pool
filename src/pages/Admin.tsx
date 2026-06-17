@@ -554,6 +554,12 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [draftPicks, setDraftPicks] = useState<Record<TierId, string>>(
+    {} as Record<TierId, string>,
+  )
+  const [draftTiebreak, setDraftTiebreak] = useState('0')
+  const [savingEdit, setSavingEdit] = useState(false)
 
   useEffect(() => subscribeEntries(tournament.id, setEntries), [tournament.id])
 
@@ -650,6 +656,24 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
     }
   }
 
+  function startEdit(e: Entry) {
+    setEditingId(e.id)
+    setDraftPicks({ ...e.picks })
+    setDraftTiebreak(String(e.tiebreak))
+  }
+
+  async function saveEdit(id: string) {
+    setSavingEdit(true)
+    try {
+      await updateEntry(id, { picks: draftPicks, tiebreak: Number(draftTiebreak) || 0 })
+      setEditingId(null)
+    } catch (err) {
+      alert('Could not save picks:\n' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
   return (
     <div className="card">
       <div className="entries-header">
@@ -735,25 +759,70 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
             {entries.map((e) => (
               <tr key={e.id}>
                 <td>
-                  <details className="entry-details">
-                    <summary>
-                      <span className="disclosure" aria-hidden="true">▶</span>
+                  {editingId === e.id ? (
+                    <div className="entry-edit">
                       <strong>{e.entryName}</strong>
-                    </summary>
-                    <ul className="pick-summary">
-                      {TIER_IDS.map((t) => (
-                        <li key={t}>
-                          <span className="muted">
-                            {tournament.tiers[t]?.label ?? TIER_LABELS[t]}:
-                          </span>{' '}
-                          {e.picks[t]}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
+                      <div className="entry-edit-picks">
+                        {TIER_IDS.map((t) => {
+                          const golfers = tournament.tiers[t]?.golfers ?? []
+                          const current = draftPicks[t] ?? ''
+                          return (
+                            <label key={t} className="entry-edit-field">
+                              <span className="muted">
+                                {tournament.tiers[t]?.label ?? TIER_LABELS[t]}
+                              </span>
+                              <select
+                                value={current}
+                                onChange={(ev) =>
+                                  setDraftPicks((p) => ({ ...p, [t]: ev.target.value }))
+                                }
+                              >
+                                {current && !golfers.includes(current) && (
+                                  <option value={current}>{current} (not in tier)</option>
+                                )}
+                                {golfers.map((g) => (
+                                  <option key={g} value={g}>
+                                    {g}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <details className="entry-details">
+                      <summary>
+                        <span className="disclosure" aria-hidden="true">▶</span>
+                        <strong>{e.entryName}</strong>
+                      </summary>
+                      <ul className="pick-summary">
+                        {TIER_IDS.map((t) => (
+                          <li key={t}>
+                            <span className="muted">
+                              {tournament.tiers[t]?.label ?? TIER_LABELS[t]}:
+                            </span>{' '}
+                            {e.picks[t]}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                 </td>
                 <td className="cell-email">{e.email}</td>
-                <td>{e.tiebreak}</td>
+                <td>
+                  {editingId === e.id ? (
+                    <input
+                      className="tb-input"
+                      type="number"
+                      value={draftTiebreak}
+                      onChange={(ev) => setDraftTiebreak(ev.target.value)}
+                    />
+                  ) : (
+                    e.tiebreak
+                  )}
+                </td>
                 <td>
                   <input
                     type="checkbox"
@@ -778,14 +847,38 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
                   />
                 </td>
                 <td>
-                  <button
-                    className="link-btn muted-link"
-                    onClick={() => {
-                      if (confirm(`Delete entry "${e.entryName}"?`)) deleteEntry(e.id)
-                    }}
-                  >
-                    Delete
-                  </button>
+                  {editingId === e.id ? (
+                    <div className="row-actions">
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => saveEdit(e.id)}
+                        disabled={savingEdit}
+                      >
+                        {savingEdit ? 'Saving…' : 'Save'}
+                      </button>
+                      <button
+                        className="link-btn muted-link"
+                        onClick={() => setEditingId(null)}
+                        disabled={savingEdit}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="row-actions">
+                      <button className="link-btn" onClick={() => startEdit(e)}>
+                        Edit picks
+                      </button>
+                      <button
+                        className="link-btn muted-link"
+                        onClick={() => {
+                          if (confirm(`Delete entry "${e.entryName}"?`)) deleteEntry(e.id)
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
