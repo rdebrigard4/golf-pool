@@ -550,6 +550,10 @@ body {
   border-bottom-color: var(--primary);
 }
 
+.admin-section-title {
+  margin: 0.5rem 0 0.75rem;
+}
+
 .entries-header {
   display: flex;
   align-items: center;

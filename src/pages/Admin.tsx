@@ -153,27 +153,47 @@ function AdminLanding({
   active: Tournament | null
   onManage: () => void
 }) {
+  const activeTournaments = active ? [active] : []
+
   return (
     <>
-      {active ? (
+      <h3 className="admin-section-title">Active Tournaments</h3>
+      {activeTournaments.length === 0 ? (
         <div className="card">
-          <h3>Active tournament</h3>
-          <p>
-            <strong>{active.name}</strong> ({active.year}) — first tee:{' '}
-            {formatTee(active.firstTeeTime)}
-          </p>
-          <p className="muted">Entry fee: ${active.entryFee}</p>
-          <div className="actions">
-            <button className="btn btn-primary" onClick={onManage}>
-              Manage →
-            </button>
-          </div>
+          <p className="muted">None active — create one below to start taking entries.</p>
         </div>
       ) : (
-        <div className="card">
-          <h3>No active tournament</h3>
-          <p className="muted">Create one below to start taking entries.</p>
-        </div>
+        activeTournaments.map((t) => (
+          <div
+            key={t.id}
+            className="card history-link"
+            role="button"
+            tabIndex={0}
+            onClick={onManage}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onManage()
+              }
+            }}
+          >
+            <div className="history-info">
+              <div className="history-title">
+                {t.name} <span className="history-year">{t.year}</span>
+              </div>
+              <div className="muted history-date">
+                First tee:{' '}
+                {new Date(t.firstTeeTime).toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}{' '}
+                · ${t.entryFee} entry
+              </div>
+            </div>
+            <span className="history-arrow muted">›</span>
+          </div>
+        ))
       )}
       <CreateTournamentForm />
     </>
