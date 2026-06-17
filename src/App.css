@@ -554,6 +554,62 @@ body {
   margin: 0.5rem 0 0.75rem;
 }
 
+.active-tournament-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  flex-wrap: wrap;
+}
+
+.active-tournament-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.active-tournament-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+
+.active-tournament-year {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.active-tournament-meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.75rem;
+}
+
+.active-tournament-meta > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.active-tournament-meta dt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.active-tournament-meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.active-tournament-manage {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .entries-header {
   display: flex;
   align-items: center;

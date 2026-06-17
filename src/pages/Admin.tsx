@@ -164,34 +164,28 @@ function AdminLanding({
         </div>
       ) : (
         activeTournaments.map((t) => (
-          <div
-            key={t.id}
-            className="card history-link"
-            role="button"
-            tabIndex={0}
-            onClick={onManage}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                onManage()
-              }
-            }}
-          >
-            <div className="history-info">
-              <div className="history-title">
-                {t.name} <span className="history-year">{t.year}</span>
-              </div>
-              <div className="muted history-date">
-                First tee:{' '}
-                {new Date(t.firstTeeTime).toLocaleDateString(undefined, {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}{' '}
-                · ${t.entryFee} entry
-              </div>
+          <div key={t.id} className="card active-tournament-card">
+            <div className="active-tournament-info">
+              <h3 className="active-tournament-title">
+                {t.name} <span className="active-tournament-year">{t.year}</span>
+              </h3>
+              <dl className="active-tournament-meta">
+                <div>
+                  <dt>First tee</dt>
+                  <dd>{formatTee(t.firstTeeTime)}</dd>
+                </div>
+                <div>
+                  <dt>Entry fee</dt>
+                  <dd>${t.entryFee}</dd>
+                </div>
+              </dl>
             </div>
-            <span className="history-arrow muted">›</span>
+            <button
+              className="btn btn-primary active-tournament-manage"
+              onClick={onManage}
+            >
+              Manage →
+            </button>
           </div>
         ))
       )}
