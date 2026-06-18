@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import Home from './pages/Home'
 import Stats from './pages/Stats'
@@ -7,7 +7,18 @@ import HistoryDetail from './pages/HistoryDetail'
 import Admin from './pages/Admin'
 import { subscribeActiveTournament } from './lib/storage'
 import { isLocked } from './lib/dates'
-import { applyTheme, loadTheme, saveTheme } from './theme'
+import {
+  applyFontScale,
+  applyTheme,
+  clampFontScale,
+  FONT_SCALE_MAX,
+  FONT_SCALE_MIN,
+  FONT_SCALE_STEP,
+  loadFontScale,
+  loadTheme,
+  saveFontScale,
+  saveTheme,
+} from './theme'
 import type { Theme } from './theme'
 import type { Tournament } from './types'
 
@@ -15,6 +26,9 @@ export default function App() {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null)
   const [, setTick] = useState(0)
   const [theme, setTheme] = useState<Theme>(() => loadTheme())
+  const [fontScale, setFontScale] = useState<number>(() => loadFontScale())
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const settingsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => subscribeActiveTournament(setActiveTournament), [])
 
@@ -27,6 +41,31 @@ export default function App() {
     applyTheme(theme)
     saveTheme(theme)
   }, [theme])
+
+  useEffect(() => {
+    applyFontScale(fontScale)
+    saveFontScale(fontScale)
+  }, [fontScale])
+
+  // Close the settings menu on an outside click or Escape.
+  useEffect(() => {
+    if (!settingsOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (!settingsRef.current?.contains(e.target as Node)) setSettingsOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSettingsOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [settingsOpen])
+
+  const bumpFont = (dir: 1 | -1) =>
+    setFontScale((s) => clampFontScale(s + dir * FONT_SCALE_STEP))
 
   const tournamentStarted = !!activeTournament && isLocked(activeTournament)
   const homeLabel = tournamentStarted ? 'Leaderboard' : 'Home'
@@ -43,14 +82,55 @@ export default function App() {
           <NavLink to="/history">History</NavLink>
           <NavLink to="/admin">Admin</NavLink>
         </nav>
-        <button
-          type="button"
-          className="theme-btn"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-        >
-          {theme === 'dark' ? '☀' : '☾'}
-        </button>
+        <div className="settings" ref={settingsRef}>
+          <button
+            type="button"
+            className="settings-btn"
+            aria-label="Settings"
+            aria-expanded={settingsOpen}
+            onClick={() => setSettingsOpen((o) => !o)}
+          >
+            ⚙
+          </button>
+          {settingsOpen && (
+            <div className="settings-panel" role="region" aria-label="Settings">
+              <div className="setting-row">
+                <span className="setting-label">Theme</span>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                >
+                  {theme === 'dark' ? '☾ Dark' : '☀ Light'}
+                </button>
+              </div>
+              <div className="setting-row">
+                <span className="setting-label">Text size</span>
+                <div className="font-controls">
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    aria-label="Decrease text size"
+                    disabled={fontScale <= FONT_SCALE_MIN}
+                    onClick={() => bumpFont(-1)}
+                  >
+                    A−
+                  </button>
+                  <span className="font-pct">{Math.round(fontScale * 100)}%</span>
+                  <button
+                    type="button"
+                    className="btn btn-sm"
+                    aria-label="Increase text size"
+                    disabled={fontScale >= FONT_SCALE_MAX}
+                    onClick={() => bumpFont(1)}
+                  >
+                    A+
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </header>
       <main className="app-main">
         <Routes>
