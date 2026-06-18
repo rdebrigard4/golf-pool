@@ -1146,6 +1146,26 @@ body {
   background: color-mix(in srgb, var(--primary) 4%, transparent);
 }
 
+/* Teams in the money get a green tint. Pinned cells carry their own opaque
+   background, so they have to be tinted explicitly to match the row. */
+.lb-grid tbody tr.lb-row-paid {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.lb-grid tbody tr.lb-row-paid .col-total,
+.lb-grid tbody tr.lb-row-paid .col-payout {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+.lb-grid tbody tr.lb-row-paid:hover {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.lb-grid tbody tr.lb-row-paid:hover .col-total,
+.lb-grid tbody tr.lb-row-paid:hover .col-payout {
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+}
+
 .lb-grid .col-rank {
   width: 2.5rem;
   text-align: center;

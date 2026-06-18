@@ -77,6 +77,7 @@ export function rankEntries(
   golfers: Map<string, GolferScore>,
   winningGolferScore: number,
   payoutStructure: PayoutSlot[],
+  lastPlaceAmount = 0,
 ): RankedEntry[] {
   const paid = entries.filter((e) => e.paid)
 
@@ -93,11 +94,21 @@ export function rankEntries(
     )
   })
 
-  return totals.map((t, idx) => ({
+  const ranked = totals.map((t, idx) => ({
     ...t,
     rank: idx + 1,
     payout: payoutStructure.find((p) => p.position === idx + 1)?.amount ?? 0,
   }))
+
+  // Booby prize: last place gets their buy-in back, but only when there are
+  // more teams than paid positions (so it can't clobber a top finisher in a
+  // tiny pool).
+  if (lastPlaceAmount > 0 && ranked.length > payoutStructure.length) {
+    const last = ranked[ranked.length - 1]
+    if (last.payout === 0) last.payout = lastPlaceAmount
+  }
+
+  return ranked
 }
 
 function sumActualRounds(rounds: GolferScore['rounds']): number {

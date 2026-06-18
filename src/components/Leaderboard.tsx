@@ -43,14 +43,16 @@ export default function Leaderboard({
   const winning = winningGolferScore(scores)
 
   const pot = paidEntries.length * tournament.entryFee
-  const payoutStructure: PayoutSlot[] =
-    tournament.payoutStructure && tournament.payoutStructure.length > 0
-      ? tournament.payoutStructure
-      : defaultPayout(pot)
+  const lastPlaceAmount = tournament.entryFee
+  const hasCustomPayout =
+    !!tournament.payoutStructure && tournament.payoutStructure.length > 0
+  const payoutStructure: PayoutSlot[] = hasCustomPayout
+    ? tournament.payoutStructure!
+    : defaultPayout(Math.max(0, pot - lastPlaceAmount))
 
   const ranked = useMemo(
-    () => rankEntries(entries, golfersMap, winning, payoutStructure),
-    [entries, golfersMap, winning, payoutStructure],
+    () => rankEntries(entries, golfersMap, winning, payoutStructure, lastPlaceAmount),
+    [entries, golfersMap, winning, payoutStructure, lastPlaceAmount],
   )
 
   return (
@@ -97,7 +99,10 @@ export default function Leaderboard({
             </thead>
             <tbody>
               {ranked.map((r) => (
-                <tr key={r.entry.id}>
+                <tr
+                  key={r.entry.id}
+                  className={r.payout > 0 ? 'lb-row-paid' : undefined}
+                >
                   <td className="col-rank">{r.rank}</td>
                   <td className="col-team">{r.entry.entryName}</td>
                   {TIER_IDS.map((t) => {

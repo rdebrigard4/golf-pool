@@ -46,12 +46,19 @@ export default function History() {
           for (const s of scores) golfersMap.set(s.name, s)
           const paidCount = entries.filter((e) => e.paid).length
           const pot = paidCount * t.entryFee
+          const lastPlaceAmount = t.entryFee
           const payouts =
             t.payoutStructure && t.payoutStructure.length > 0
               ? t.payoutStructure
-              : defaultPayout(pot)
+              : defaultPayout(Math.max(0, pot - lastPlaceAmount))
           const winning = winningGolferScore(scores)
-          const ranked = rankEntries(entries, golfersMap, winning, payouts)
+          const ranked = rankEntries(
+            entries,
+            golfersMap,
+            winning,
+            payouts,
+            lastPlaceAmount,
+          )
           next[t.id] = ranked.slice(0, 3)
         } catch (err) {
           console.error('history snippet failed:', t.id, err)
