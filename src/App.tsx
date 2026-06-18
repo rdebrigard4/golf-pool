@@ -63,6 +63,7 @@ export default function App() {
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>
+      <footer className="app-footer">build {__BUILD_ID__}</footer>
     </div>
   )
 }
