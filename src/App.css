@@ -1127,7 +1127,6 @@ body {
 @media (max-width: 560px) {
   .lb-grid {
     font-size: 0.7rem;
-    min-width: 0;
   }
 
   .lb-grid th,
@@ -1137,6 +1136,17 @@ body {
 
   .lb-grid thead th {
     font-size: 0.58rem;
+  }
+
+  /* Pick columns keep their full golfer name and the table scrolls, rather
+     than compressing everything to fit the screen (spreadsheet behaviour). */
+  .lb-grid .col-tier {
+    min-width: 6.5rem;
+  }
+
+  .lb-grid .col-tier .cell-golfer {
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .lb-grid .col-rank {
