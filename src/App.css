@@ -1110,6 +1110,30 @@ body {
   overflow-x: auto;
 }
 
+/* On wide screens let the table card break out of the 1280px app cap and
+   center on the viewport, so the leaderboard uses the available real estate
+   (the natural table width is ~1450px). */
+@media (min-width: 1024px) {
+  .lb-wrap {
+    width: min(100vw - 3rem, 1500px);
+    margin-left: calc(50% - min(100vw - 3rem, 1500px) / 2);
+    margin-right: calc(50% - min(100vw - 3rem, 1500px) / 2);
+  }
+}
+
+/* With four pinned columns, claw back horizontal room for the scrolling
+   middle on phones. */
+@media (max-width: 560px) {
+  .lb-grid th,
+  .lb-grid td {
+    padding: 0.5rem 0.4rem;
+  }
+
+  .lb-grid .col-team {
+    width: 108px;
+  }
+}
+
 .lb-grid {
   border-collapse: collapse;
   width: 100%;
@@ -1152,6 +1176,8 @@ body {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
+.lb-grid tbody tr.lb-row-paid .col-rank,
+.lb-grid tbody tr.lb-row-paid .col-team,
 .lb-grid tbody tr.lb-row-paid .col-total,
 .lb-grid tbody tr.lb-row-paid .col-payout {
   background: color-mix(in srgb, var(--accent) 12%, var(--surface));
@@ -1161,21 +1187,32 @@ body {
   background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
+.lb-grid tbody tr.lb-row-paid:hover .col-rank,
+.lb-grid tbody tr.lb-row-paid:hover .col-team,
 .lb-grid tbody tr.lb-row-paid:hover .col-total,
 .lb-grid tbody tr.lb-row-paid:hover .col-payout {
   background: color-mix(in srgb, var(--accent) 20%, var(--surface));
 }
 
 .lb-grid .col-rank {
-  width: 2.5rem;
+  width: 3rem;
   text-align: center;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--surface);
 }
 
 .lb-grid .col-team {
   font-weight: 600;
-  min-width: 120px;
+  width: 150px;
+  position: sticky;
+  left: 3rem;
+  z-index: 2;
+  background: var(--surface);
+  box-shadow: 6px 0 6px -4px rgba(0, 0, 0, 0.12);
 }
 
 .lb-grid .col-total {
@@ -1216,6 +1253,8 @@ body {
 
 /* Pinned header corners sit above both the sticky header row and the
    sticky body columns. */
+.lb-grid thead th.col-rank,
+.lb-grid thead th.col-team,
 .lb-grid thead th.col-total,
 .lb-grid thead th.col-payout {
   z-index: 3;
@@ -1224,6 +1263,8 @@ body {
 
 /* Keep pinned cells in sync with row hover (sticky cells have their own
    opaque background, so the row-level hover rule can't show through). */
+.lb-grid tbody tr:hover .col-rank,
+.lb-grid tbody tr:hover .col-team,
 .lb-grid tbody tr:hover .col-total,
 .lb-grid tbody tr:hover .col-payout {
   background: color-mix(in srgb, var(--primary) 4%, var(--surface));
