@@ -1206,7 +1206,9 @@ body {
 }
 
 .lb-grid .col-team {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
   width: 150px;
   position: sticky;
   left: 3rem;
