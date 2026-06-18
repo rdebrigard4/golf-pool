@@ -1125,126 +1125,6 @@ body {
   }
 }
 
-@media (max-width: 560px) {
-  /* The header (title + 4-tab nav + theme toggle) is wider than a phone
-     screen. Left in one row it overflows horizontally, which on iOS expands
-     the layout viewport — disabling these very mobile rules and leaving dead
-     space on the right. Use an explicit grid: title + toggle on top, nav on
-     its own full-width row below. */
-  .app-header {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      'title toggle'
-      'nav nav';
-    align-items: center;
-    gap: 0.5rem 0.75rem;
-    padding: 0.75rem 1rem;
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-  }
-
-  .app-header h1 {
-    grid-area: title;
-    font-size: 1.1rem;
-    white-space: nowrap;
-  }
-
-  .theme-btn {
-    grid-area: toggle;
-  }
-
-  .app-nav {
-    grid-area: nav;
-    justify-content: space-between;
-    /* Safety net: on a very narrow phone the four tabs scroll within the bar
-       rather than overflowing the page and expanding the layout viewport. */
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .app-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .app-nav a {
-    padding: 0.3rem 0.45rem;
-    font-size: 0.74rem;
-  }
-}
-
-/* On phones, four pinned columns leave almost no room to scroll. Keep only
-   the team identity (rank + name) pinned, let total/payout rejoin the scroll,
-   and shrink the type so several picks are visible at once. */
-@media (max-width: 560px) {
-  .lb-grid {
-    font-size: 0.7rem;
-  }
-
-  .lb-grid th,
-  .lb-grid td {
-    padding: 0.4rem 0.35rem;
-  }
-
-  .lb-grid thead th {
-    font-size: 0.58rem;
-  }
-
-  /* Pick columns keep their full golfer name and the table scrolls, rather
-     than compressing everything to fit the screen (spreadsheet behaviour). */
-  .lb-grid .col-tier {
-    min-width: 6.5rem;
-  }
-
-  .lb-grid .col-tier .cell-golfer {
-    overflow: visible;
-    text-overflow: clip;
-  }
-
-  .lb-grid .col-rank {
-    width: 1.9rem;
-  }
-
-  .lb-grid .col-team {
-    width: 84px;
-    left: 1.9rem;
-    font-size: 0.74rem;
-  }
-
-  /* Unpin the right columns so the scroll window isn't squeezed to nothing. */
-  .lb-grid .col-total,
-  .lb-grid .col-payout {
-    position: static;
-    box-shadow: none;
-  }
-
-  .lb-grid thead th.col-total,
-  .lb-grid thead th.col-payout {
-    z-index: 1;
-  }
-
-  .lb-grid .col-total {
-    width: 3.25rem;
-    font-size: 0.78rem;
-  }
-
-  .lb-grid .col-payout {
-    width: 3.5rem;
-  }
-
-  .lb-grid .col-tb {
-    width: 2.25rem;
-  }
-
-  .cell-golfer,
-  .cell-score {
-    font-size: 0.7rem;
-  }
-
-  .cell-content {
-    gap: 0.4rem;
-  }
-}
-
 .lb-grid {
   border-collapse: collapse;
   width: 100%;
@@ -1587,5 +1467,131 @@ body {
 
 .final-badge {
   background: var(--primary);
+}
+
+/* ── Mobile overrides ──────────────────────────────────────────────────────
+   These live at the end of the file on purpose: they share selectors and
+   property names with the base component rules above, so they must come last
+   in source order to win the cascade. */
+
+@media (max-width: 560px) {
+  /* The header (title + 4-tab nav + theme toggle) is wider than a phone
+     screen. Left in one row it overflows horizontally, which on iOS expands
+     the layout viewport — disabling these very mobile rules and leaving dead
+     space on the right. Use an explicit grid: title + toggle on top, nav on
+     its own full-width row below. */
+  .app-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'title toggle'
+      'nav nav';
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .app-header h1 {
+    grid-area: title;
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+
+  .theme-btn {
+    grid-area: toggle;
+  }
+
+  .app-nav {
+    grid-area: nav;
+    justify-content: space-between;
+    /* Safety net: on a very narrow phone the four tabs scroll within the bar
+       rather than overflowing the page and expanding the layout viewport. */
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .app-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-nav a {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.74rem;
+  }
+
+  /* Dense spreadsheet feel: small type, tight cells, and size the table to its
+     content (not forced to 720px nor stretched to fill) so the pick columns
+     stay compact and several fit on screen at once. Keep only the team
+     identity (rank + name) pinned; let total/payout rejoin the scroll. */
+  .lb-grid {
+    font-size: 0.6rem;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .lb-grid th,
+  .lb-grid td {
+    padding: 0.3rem 0.3rem;
+  }
+
+  .lb-grid thead th {
+    font-size: 0.52rem;
+  }
+
+  /* Pick columns keep their full golfer name and the table scrolls, rather
+     than compressing everything to fit the screen. */
+  .lb-grid .col-tier {
+    min-width: 4.25rem;
+  }
+
+  .lb-grid .col-tier .cell-golfer {
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .lb-grid .col-rank {
+    width: 1.6rem;
+  }
+
+  .lb-grid .col-team {
+    width: 70px;
+    left: 1.6rem;
+    font-size: 0.64rem;
+  }
+
+  /* Unpin the right columns so the scroll window isn't squeezed to nothing. */
+  .lb-grid .col-total,
+  .lb-grid .col-payout {
+    position: static;
+    box-shadow: none;
+  }
+
+  .lb-grid thead th.col-total,
+  .lb-grid thead th.col-payout {
+    z-index: 1;
+  }
+
+  .lb-grid .col-total {
+    width: 3.25rem;
+    font-size: 0.78rem;
+  }
+
+  .lb-grid .col-payout {
+    width: 3.5rem;
+  }
+
+  .lb-grid .col-tb {
+    width: 2.25rem;
+  }
+
+  .cell-golfer,
+  .cell-score {
+    font-size: 0.6rem;
+  }
+
+  .cell-content {
+    gap: 0.3rem;
+  }
 }
 
