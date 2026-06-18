@@ -1121,16 +1121,66 @@ body {
   }
 }
 
-/* With four pinned columns, claw back horizontal room for the scrolling
-   middle on phones. */
+/* On phones, four pinned columns leave almost no room to scroll. Keep only
+   the team identity (rank + name) pinned, let total/payout rejoin the scroll,
+   and shrink the type so several picks are visible at once. */
 @media (max-width: 560px) {
+  .lb-grid {
+    font-size: 0.7rem;
+    min-width: 0;
+  }
+
   .lb-grid th,
   .lb-grid td {
-    padding: 0.5rem 0.4rem;
+    padding: 0.4rem 0.35rem;
+  }
+
+  .lb-grid thead th {
+    font-size: 0.58rem;
+  }
+
+  .lb-grid .col-rank {
+    width: 1.9rem;
   }
 
   .lb-grid .col-team {
-    width: 108px;
+    width: 84px;
+    left: 1.9rem;
+    font-size: 0.74rem;
+  }
+
+  /* Unpin the right columns so the scroll window isn't squeezed to nothing. */
+  .lb-grid .col-total,
+  .lb-grid .col-payout {
+    position: static;
+    box-shadow: none;
+  }
+
+  .lb-grid thead th.col-total,
+  .lb-grid thead th.col-payout {
+    z-index: 1;
+  }
+
+  .lb-grid .col-total {
+    width: 3.25rem;
+    font-size: 0.78rem;
+  }
+
+  .lb-grid .col-payout {
+    width: 3.5rem;
+  }
+
+  .lb-grid .col-tb {
+    width: 2.25rem;
+  }
+
+  .cell-golfer,
+  .cell-score {
+    font-size: 0.7rem;
+  }
+
+  .cell-content {
+    gap: 0.4rem;
   }
 }
 
