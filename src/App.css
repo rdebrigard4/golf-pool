@@ -430,6 +430,13 @@ body {
   color: var(--muted);
 }
 
+.hero-updated {
+  margin: 0.25rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
 .team-count {
   margin: 1.25rem 0 0;
   padding-top: 1rem;

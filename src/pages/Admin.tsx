@@ -17,6 +17,7 @@ import {
 } from '../lib/storage'
 import type { LiveScoresMeta } from '../lib/storage'
 import { pullLiveScores } from '../lib/espnLive'
+import { formatRelativeTime } from '../lib/dates'
 import type { Entry, GolferScore, GolferStatus, TierId, Tournament } from '../types'
 import { TIER_IDS, TIER_LABELS } from '../types'
 import { buildImport } from '../lib/importEntries'
@@ -892,16 +893,6 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
   )
 }
 
-function relTime(iso: string, nowMs: number): string {
-  const secs = Math.max(0, Math.round((nowMs - new Date(iso).getTime()) / 1000))
-  if (secs < 45) return 'just now'
-  const mins = Math.round(secs / 60)
-  if (mins < 60) return `${mins} min ago`
-  const hrs = Math.round(mins / 60)
-  if (hrs < 24) return `${hrs} hr ago`
-  return `${Math.round(hrs / 24)} d ago`
-}
-
 function ScoringTab({ tournament }: { tournament: Tournament }) {
   const [scores, setScores] = useState<GolferScore[]>([])
   const [meta, setMeta] = useState<LiveScoresMeta | null>(null)
@@ -950,7 +941,7 @@ function ScoringTab({ tournament }: { tournament: Tournament }) {
             <strong>Live scores (ESPN)</strong>
             <div className="muted">
               {meta?.updatedAt
-                ? `Last pulled ${relTime(meta.updatedAt, now)}`
+                ? `Last pulled ${formatRelativeTime(meta.updatedAt, now)}`
                 : 'Not pulled yet'}
               {meta?.currentRound
                 ? ` · round ${meta.currentRound} (${meta.eventState})`

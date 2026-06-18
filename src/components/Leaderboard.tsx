@@ -1,10 +1,13 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   defaultPayout,
   rankEntries,
   scoreGolferForTeam,
   winningGolferScore,
 } from '../lib/scoring'
+import { subscribeLiveScoresMeta } from '../lib/storage'
+import type { LiveScoresMeta } from '../lib/storage'
+import { formatRelativeTime } from '../lib/dates'
 import { TIER_IDS, TIER_LABELS } from '../types'
 import type {
   Entry,
@@ -32,6 +35,15 @@ export default function Leaderboard({
   scores,
   badge = 'LIVE',
 }: Props) {
+  const [meta, setMeta] = useState<LiveScoresMeta | null>(null)
+  const [now, setNow] = useState(() => Date.now())
+
+  useEffect(() => subscribeLiveScoresMeta(tournament.id, setMeta), [tournament.id])
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000)
+    return () => clearInterval(id)
+  }, [])
+
   const paidEntries = useMemo(() => entries.filter((e) => e.paid), [entries])
 
   const golfersMap = useMemo(() => {
@@ -73,6 +85,11 @@ export default function Leaderboard({
         </div>
         {scores.length > 0 && winning < Infinity && (
           <p className="hero-subtle">Leader at {formatScore(winning)}</p>
+        )}
+        {badge === 'LIVE' && meta?.updatedAt && (
+          <p className="hero-updated">
+            Scores updated {formatRelativeTime(meta.updatedAt, now)}
+          </p>
         )}
       </div>
 
