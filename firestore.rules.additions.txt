@@ -1,0 +1,21 @@
+// ADD these two match blocks to the Firestore rules in the Firebase console
+// (Build > Firestore Database > Rules), inside the existing
+// `match /databases/{database}/documents { ... }` block, then Publish.
+//
+// They mirror the access model of the existing golferScores rule: anyone can
+// read (the leaderboard is public), only the admin account can write. The cron
+// fetcher signs in as rdebrigard4@gmail.com, so its writes pass this check.
+
+// Live scores: one aggregate doc per tournament, written only by the cron.
+match /liveScores/{tournamentId} {
+  allow read: if true;
+  allow write: if request.auth != null
+    && request.auth.token.email == 'rdebrigard4@gmail.com';
+}
+
+// Manual admin score corrections (override the live scores per golfer).
+match /scoreOverrides/{tournamentId} {
+  allow read: if true;
+  allow write: if request.auth != null
+    && request.auth.token.email == 'rdebrigard4@gmail.com';
+}

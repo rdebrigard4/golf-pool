@@ -1,0 +1,32 @@
+name: Live scores
+
+# Single fetcher for the whole pool: pulls ESPN once and writes ONE aggregate
+# liveScores/{tournamentId} doc that every client reads via onSnapshot.
+# The script no-ops when there is no active, in-progress tournament, so it is
+# cheap to leave running between events.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # every 5 minutes (GitHub's minimum granularity)
+  workflow_dispatch: {} # allow manual "Run workflow" from the Actions tab
+
+# If a run is still going when the next tick fires, skip rather than pile up.
+concurrency:
+  group: live-scores
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Fetch live scores
+        env:
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: node scripts/fetch-live-scores.mjs
