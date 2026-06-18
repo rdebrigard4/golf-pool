@@ -4,7 +4,7 @@ import {
   subscribeEntries,
 } from '../lib/storage'
 import { isLocked } from '../lib/dates'
-import { TIER_IDS, TIER_LABELS } from '../types'
+import { TIER_LABELS } from '../types'
 import type { Entry, TierId, Tournament } from '../types'
 
 export default function Stats() {
@@ -73,24 +73,41 @@ function StatsView({
   const paid = useMemo(() => entries.filter((e) => e.paid), [entries])
   const pot = paid.length * tournament.entryFee
 
-  const tierStats: { tier: TierId; items: PickCount[] }[] = useMemo(() => {
-    return TIER_IDS.map((tier) => {
+  // tier5a and tier5b share one golfer pool, so they're merged into a single
+  // "Tier 5" section that aggregates picks across both slots.
+  const sections: { key: string; label: string; tiers: TierId[] }[] = useMemo(
+    () => [
+      { key: 'tier1', label: tournament.tiers.tier1?.label ?? TIER_LABELS.tier1, tiers: ['tier1'] },
+      { key: 'tier2', label: tournament.tiers.tier2?.label ?? TIER_LABELS.tier2, tiers: ['tier2'] },
+      { key: 'tier3', label: tournament.tiers.tier3?.label ?? TIER_LABELS.tier3, tiers: ['tier3'] },
+      { key: 'tier4', label: tournament.tiers.tier4?.label ?? TIER_LABELS.tier4, tiers: ['tier4'] },
+      { key: 'tier5', label: 'Tier 5', tiers: ['tier5a', 'tier5b'] },
+    ],
+    [tournament.tiers],
+  )
+
+  const tierStats: { key: string; label: string; items: PickCount[] }[] = useMemo(() => {
+    return sections.map(({ key, label, tiers }) => {
       const counts = new Map<string, number>()
+      let total = 0
       for (const e of paid) {
-        const pick = e.picks[tier]
-        if (!pick) continue
-        counts.set(pick, (counts.get(pick) ?? 0) + 1)
+        for (const tier of tiers) {
+          const pick = e.picks[tier]
+          if (!pick) continue
+          counts.set(pick, (counts.get(pick) ?? 0) + 1)
+          total++
+        }
       }
       const items = Array.from(counts.entries())
         .map(([name, count]) => ({
           name,
           count,
-          pct: paid.length > 0 ? count / paid.length : 0,
+          pct: total > 0 ? count / total : 0,
         }))
         .sort((a, b) => b.count - a.count)
-      return { tier, items }
+      return { key, label, items }
     })
-  }, [paid])
+  }, [paid, sections])
 
   const tiebreakBuckets: TiebreakBucket[] = useMemo(() => {
     const buckets: TiebreakBucket[] = [
@@ -142,10 +159,10 @@ function StatsView({
         </div>
       ) : (
         <>
-          {tierStats.map(({ tier, items }) => (
-            <div key={tier} className="card">
+          {tierStats.map(({ key, label, items }) => (
+            <div key={key} className="card">
               <div className="card-section-head">
-                <h3>{tournament.tiers[tier]?.label ?? TIER_LABELS[tier]}</h3>
+                <h3>{label}</h3>
                 <span className="muted">most picked</span>
               </div>
               {items.length === 0 ? (
