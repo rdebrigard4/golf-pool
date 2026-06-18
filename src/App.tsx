@@ -35,24 +35,22 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>Golf Pool</h1>
-        <div className="header-right">
-          <nav className="app-nav">
-            <NavLink to="/" end>
-              {homeLabel}
-            </NavLink>
-            <NavLink to="/stats">Stats</NavLink>
-            <NavLink to="/history">History</NavLink>
-            <NavLink to="/admin">Admin</NavLink>
-          </nav>
-          <button
-            type="button"
-            className="theme-btn"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-          >
-            {theme === 'dark' ? '☀' : '☾'}
-          </button>
-        </div>
+        <nav className="app-nav">
+          <NavLink to="/" end>
+            {homeLabel}
+          </NavLink>
+          <NavLink to="/stats">Stats</NavLink>
+          <NavLink to="/history">History</NavLink>
+          <NavLink to="/admin">Admin</NavLink>
+        </nav>
+        <button
+          type="button"
+          className="theme-btn"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? '☀' : '☾'}
+        </button>
       </header>
       <main className="app-main">
         <Routes>

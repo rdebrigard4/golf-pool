@@ -49,7 +49,7 @@ body {
   z-index: 5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.75rem;
   padding: 1rem 1.25rem;
   padding-top: max(1rem, env(safe-area-inset-top));
   background: linear-gradient(
@@ -64,6 +64,7 @@ body {
   font-size: 1.25rem;
   font-weight: 800;
   margin: 0;
+  margin-right: auto;
   letter-spacing: -0.02em;
   color: var(--primary);
   display: flex;
@@ -79,12 +80,6 @@ body {
   border-radius: 50%;
   background: var(--primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 }
 
 .theme-btn {
@@ -1127,6 +1122,53 @@ body {
     width: min(100vw - 3rem, 1500px);
     margin-left: calc(50% - min(100vw - 3rem, 1500px) / 2);
     margin-right: calc(50% - min(100vw - 3rem, 1500px) / 2);
+  }
+}
+
+@media (max-width: 560px) {
+  /* The header (title + 4-tab nav + theme toggle) is wider than a phone
+     screen. Left in one row it overflows horizontally, which on iOS expands
+     the layout viewport — disabling these very mobile rules and leaving dead
+     space on the right. Use an explicit grid: title + toggle on top, nav on
+     its own full-width row below. */
+  .app-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'title toggle'
+      'nav nav';
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .app-header h1 {
+    grid-area: title;
+    font-size: 1.1rem;
+    white-space: nowrap;
+  }
+
+  .theme-btn {
+    grid-area: toggle;
+  }
+
+  .app-nav {
+    grid-area: nav;
+    justify-content: space-between;
+    /* Safety net: on a very narrow phone the four tabs scroll within the bar
+       rather than overflowing the page and expanding the layout viewport. */
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .app-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-nav a {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.74rem;
   }
 }
 
