@@ -1164,6 +1164,11 @@ body {
   font-variant-numeric: tabular-nums;
   font-size: 1rem;
   text-align: right;
+  position: sticky;
+  right: 4.5rem;
+  z-index: 2;
+  background: var(--surface);
+  box-shadow: -6px 0 6px -4px rgba(0, 0, 0, 0.12);
 }
 
 .lb-grid .col-tier {
@@ -1183,6 +1188,25 @@ body {
   font-weight: 600;
   color: var(--accent);
   text-align: right;
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--surface);
+}
+
+/* Pinned header corners sit above both the sticky header row and the
+   sticky body columns. */
+.lb-grid thead th.col-total,
+.lb-grid thead th.col-payout {
+  z-index: 3;
+  background: var(--primary-soft);
+}
+
+/* Keep pinned cells in sync with row hover (sticky cells have their own
+   opaque background, so the row-level hover rule can't show through). */
+.lb-grid tbody tr:hover .col-total,
+.lb-grid tbody tr:hover .col-payout {
+  background: color-mix(in srgb, var(--primary) 4%, var(--surface));
 }
 
 .cell-content {
