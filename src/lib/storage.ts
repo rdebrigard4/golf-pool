@@ -100,6 +100,34 @@ export function subscribeGolferScores(
   }
 }
 
+// Metadata about the last cron/manual pull, from the liveScores doc. Used by the
+// Admin Golfer Scores tab to show when scores were last fetched.
+export interface LiveScoresMeta {
+  updatedAt: string | null
+  eventState: string | null
+  currentRound: number | null
+  unmatched: string[]
+}
+
+export function subscribeLiveScoresMeta(
+  tournamentId: string,
+  onChange: (meta: LiveScoresMeta) => void,
+): () => void {
+  return onSnapshot(
+    doc(db, 'liveScores', tournamentId),
+    (snap) => {
+      const d = snap.exists() ? snap.data() : null
+      onChange({
+        updatedAt: (d?.updatedAt as string) ?? null,
+        eventState: (d?.eventState as string) ?? null,
+        currentRound: (d?.currentRound as number) ?? null,
+        unmatched: (d?.unmatched as string[]) ?? [],
+      })
+    },
+    (err) => console.error('subscribeLiveScoresMeta:', err),
+  )
+}
+
 export async function listPastTournaments(): Promise<Tournament[]> {
   const q = query(collection(db, 'tournaments'), where('isComplete', '==', true))
   const snap = await getDocs(q)

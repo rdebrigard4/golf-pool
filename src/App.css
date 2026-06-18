@@ -1469,6 +1469,29 @@ body {
   background: var(--primary);
 }
 
+.pull-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pull-status strong {
+  font-size: 0.95rem;
+}
+
+.pull-msg {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+}
+
+.pull-note {
+  margin: 0.4rem 0 0;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
 /* ── Mobile overrides ──────────────────────────────────────────────────────
    These live at the end of the file on purpose: they share selectors and
    property names with the base component rules above, so they must come last

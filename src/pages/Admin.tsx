@@ -11,9 +11,12 @@ import {
   subscribeActiveTournament,
   subscribeEntries,
   subscribeGolferScores,
+  subscribeLiveScoresMeta,
   updateEntry,
   updateTournament,
 } from '../lib/storage'
+import type { LiveScoresMeta } from '../lib/storage'
+import { pullLiveScores } from '../lib/espnLive'
 import type { Entry, GolferScore, GolferStatus, TierId, Tournament } from '../types'
 import { TIER_IDS, TIER_LABELS } from '../types'
 import { buildImport } from '../lib/importEntries'
@@ -889,10 +892,49 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
   )
 }
 
+function relTime(iso: string, nowMs: number): string {
+  const secs = Math.max(0, Math.round((nowMs - new Date(iso).getTime()) / 1000))
+  if (secs < 45) return 'just now'
+  const mins = Math.round(secs / 60)
+  if (mins < 60) return `${mins} min ago`
+  const hrs = Math.round(mins / 60)
+  if (hrs < 24) return `${hrs} hr ago`
+  return `${Math.round(hrs / 24)} d ago`
+}
+
 function ScoringTab({ tournament }: { tournament: Tournament }) {
   const [scores, setScores] = useState<GolferScore[]>([])
+  const [meta, setMeta] = useState<LiveScoresMeta | null>(null)
+  const [pulling, setPulling] = useState(false)
+  const [pullMsg, setPullMsg] = useState<string | null>(null)
+  const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => subscribeGolferScores(tournament.id, setScores), [tournament.id])
+  useEffect(() => subscribeLiveScoresMeta(tournament.id, setMeta), [tournament.id])
+
+  // Tick so the "last pulled" relative time stays current.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000)
+    return () => clearInterval(id)
+  }, [])
+
+  async function handlePull() {
+    setPulling(true)
+    setPullMsg(null)
+    try {
+      const r = await pullLiveScores(tournament)
+      setNow(Date.now())
+      setPullMsg(
+        `Pulled ${r.count} golfers${
+          r.unmatched.length ? `, ${r.unmatched.length} unmatched` : ''
+        } · round ${r.currentRound} (${r.eventState})`,
+      )
+    } catch (e) {
+      setPullMsg(`Pull failed: ${e instanceof Error ? e.message : String(e)}`)
+    } finally {
+      setPulling(false)
+    }
+  }
 
   const scoresMap = useMemo(() => {
     const m = new Map<string, GolferScore>()
@@ -902,6 +944,39 @@ function ScoringTab({ tournament }: { tournament: Tournament }) {
 
   return (
     <div>
+      <div className="card">
+        <div className="pull-bar">
+          <div className="pull-status">
+            <strong>Live scores (ESPN)</strong>
+            <div className="muted">
+              {meta?.updatedAt
+                ? `Last pulled ${relTime(meta.updatedAt, now)}`
+                : 'Not pulled yet'}
+              {meta?.currentRound
+                ? ` · round ${meta.currentRound} (${meta.eventState})`
+                : ''}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handlePull}
+            disabled={pulling}
+          >
+            {pulling ? 'Pulling…' : 'Pull now'}
+          </button>
+        </div>
+        {pullMsg && <p className="muted pull-msg">{pullMsg}</p>}
+        {meta && meta.unmatched.length > 0 && (
+          <p className="error pull-msg">
+            {meta.unmatched.length} unmatched (need name aliases):{' '}
+            {meta.unmatched.join(', ')}
+          </p>
+        )}
+        <p className="muted pull-note">
+          Scores also refresh automatically about every 5 minutes.
+        </p>
+      </div>
       {TIER_IDS.map((tier) => {
         const golfers = tournament.tiers[tier]?.golfers ?? []
         if (golfers.length === 0) return null
