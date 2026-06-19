@@ -558,6 +558,7 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
   const [preview, setPreview] = useState<ImportPreview | null>(null)
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
+  const [pruneRemoved, setPruneRemoved] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftPicks, setDraftPicks] = useState<Record<TierId, string>>(
     {} as Record<TierId, string>,
@@ -624,6 +625,7 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
     e.target.value = '' // allow re-picking the same file later
     if (!file) return
     setImportMsg('')
+    setPruneRemoved(false)
     try {
       const text = await file.text()
       setPreview(buildImport(text, tournament))
@@ -651,8 +653,14 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
         // Preserve any paid flag already set on this entry.
         await setEntry(p.docId, { ...p.entry, paid: paidById.get(p.docId) ?? false })
       }
-      setImportMsg(`Imported ${preview.entries.length} entr${preview.entries.length === 1 ? 'y' : 'ies'} (${previewCreate} new, ${previewUpdate} updated).`)
+      let prunedNote = ''
+      if (pruneRemoved && previewRemoved.length > 0) {
+        for (const e of previewRemoved) await deleteEntry(e.id)
+        prunedNote = `, ${previewRemoved.length} removed`
+      }
+      setImportMsg(`Imported ${preview.entries.length} entr${preview.entries.length === 1 ? 'y' : 'ies'} (${previewCreate} new, ${previewUpdate} updated${prunedNote}).`)
       setPreview(null)
+      setPruneRemoved(false)
     } catch (err) {
       setImportMsg(err instanceof Error ? err.message : 'Import failed')
     } finally {
@@ -714,9 +722,37 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
             {preview.entries.length === 1 ? 'y' : 'ies'} ({previewCreate} new,{' '}
             {previewUpdate} updated)
             {previewRemoved.length > 0 && (
-              <> · {previewRemoved.length} existing not in file (kept)</>
+              <>
+                {' '}
+                · {previewRemoved.length} existing not in file (
+                {pruneRemoved ? 'will be removed' : 'kept'})
+              </>
             )}
           </p>
+          {previewRemoved.length > 0 && (
+            <details open>
+              <summary>
+                {previewRemoved.length} entr{previewRemoved.length === 1 ? 'y' : 'ies'} in
+                the pool but not in this file
+              </summary>
+              <ul className="import-removed">
+                {previewRemoved.map((e) => (
+                  <li key={e.id}>
+                    {e.entryName} <span className="muted">({e.email})</span>
+                  </li>
+                ))}
+              </ul>
+              <label className="import-prune">
+                <input
+                  type="checkbox"
+                  checked={pruneRemoved}
+                  onChange={(ev) => setPruneRemoved(ev.target.checked)}
+                />{' '}
+                Delete {previewRemoved.length === 1 ? 'this entry' : 'these entries'} on
+                import (e.g. a renamed/re-emailed duplicate)
+              </label>
+            </details>
+          )}
           {preview.problems.length > 0 ? (
             <details open>
               <summary>
@@ -739,7 +775,14 @@ function EntriesTab({ tournament }: { tournament: Tournament }) {
             >
               {importing ? 'Importing…' : `Confirm import (${preview.entries.length})`}
             </button>
-            <button className="btn" onClick={() => setPreview(null)} disabled={importing}>
+            <button
+              className="btn"
+              onClick={() => {
+                setPreview(null)
+                setPruneRemoved(false)
+              }}
+              disabled={importing}
+            >
               Cancel
             </button>
           </div>

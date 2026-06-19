@@ -758,6 +758,28 @@ body {
   overflow-y: auto;
 }
 
+.import-preview details > summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.import-removed {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.import-prune {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
+
 .import-preview-actions {
   display: flex;
   gap: 0.5rem;

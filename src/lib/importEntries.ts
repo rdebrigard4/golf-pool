@@ -65,7 +65,13 @@ export function normalizeTiebreak(raw: string): { value: number | null; flag?: s
   const paren = s.match(/^(-?\+?\d+)\s*\(/) // "-3 (277)" -> "-3"
   if (paren) s = paren[1]
   s = s.replace(/^\+/, '') // "+3" -> "3"
-  if (/^e(ven)?$/i.test(s)) return { value: 0 }
+  if (/^(e|even)(\s*par)?$/i.test(s)) return { value: 0 } // "E", "even", "even par"
+  // "10 under" / "10 under par" -> -10 ; "5 over" -> 5
+  const overUnder = s.match(/^(\d+)\s*(under|over)(\s*par)?$/i)
+  if (overUnder) {
+    const mag = Number(overUnder[1])
+    return { value: /under/i.test(overUnder[2]) ? -mag : mag }
+  }
   const n = Number(s)
   if (!Number.isFinite(n)) return { value: null, flag: `unparseable: "${raw}"` }
   if (n >= 200) return { value: n - PAR_TOTAL } // total strokes -> to-par
